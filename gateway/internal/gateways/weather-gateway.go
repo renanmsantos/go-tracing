@@ -1,10 +1,14 @@
 package gateways
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type Response struct {
@@ -14,12 +18,14 @@ type Response struct {
 	KelvinTemperature float64 `json:"temp_K"`
 }
 
-func GetLocationAndTemperature(cep string) (Response, error) {
-	url := fmt.Sprintf("http://localhost:8081?cep=%s", cep)
-	req, err := http.NewRequest("GET", url, nil)
+func GetLocationAndTemperature(ctx context.Context, cep string) (Response, error) {
+	url := fmt.Sprintf("http://go-weather:8081?cep=%s", cep)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return Response{}, err
 	}
+
+	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {

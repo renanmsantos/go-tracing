@@ -1,19 +1,20 @@
 package usecases
 
 import (
+	"context"
 	"errors"
 	"regexp"
 
 	"github.com/renanmsantos/go-gateway/internal/gateways"
 )
 
-func Execute(input Input) (Output, error) {
+func Execute(ctx context.Context, input Input) (Output, error) {
 	//CEP validation
 	if !isValidCep(input.Cep) {
 		return Output{}, errors.New("INVALID_CEP")
 	}
 	//Get gateway
-	response, err := gateways.GetLocationAndTemperature(input.Cep)
+	response, err := gateways.GetLocationAndTemperature(ctx, input.Cep)
 	if err != nil {
 		return Output{}, err
 	}

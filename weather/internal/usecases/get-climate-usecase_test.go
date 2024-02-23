@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,14 +9,14 @@ import (
 
 func TestShouldExecutionReturnErrorWhenLocationIsNotFound(t *testing.T) {
 
-	_, err := Execute("12345678")
+	_, err := Execute(context.TODO(), "12345678")
 
 	assert.Equal(t, "CEP_NOT_FOUND", err.Error())
 }
 
 func TestShouldExecutionReturnErrorWhenCepIsInvalid(t *testing.T) {
 	cep := "1234567"
-	_, err := Execute(cep)
+	_, err := Execute(context.TODO(), cep)
 	assert.Equal(t, "INVALID_CEP", err.Error())
 }
 

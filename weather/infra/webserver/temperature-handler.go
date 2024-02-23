@@ -5,13 +5,23 @@ import (
 	"net/http"
 
 	"github.com/renanmoreirasan/go-weather/internal/usecases"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
 
-func GetTemperature() func(w http.ResponseWriter, r *http.Request) {
+func GetTemperature(tracer trace.Tracer) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		carrier := propagation.HeaderCarrier(r.Header)
+		ctx := r.Context()
+		ctx = otel.GetTextMapPropagator().Extract(ctx, carrier)
+
+		ctx, span := tracer.Start(ctx, "START go-weather")
+		defer span.End()
+
 		w.Header().Set("Content-Type", "application/json")
 		input := r.URL.Query().Get("cep")
-		output, err := usecases.Execute(input)
+		output, err := usecases.Execute(ctx, input)
 		if err != nil && err.Error() == "INVALID_CEP" {
 			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 			json.NewEncoder(w).Encode("Invalid zipcode")

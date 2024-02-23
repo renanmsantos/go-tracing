@@ -1,11 +1,15 @@
 package gateways
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type Location struct {
@@ -14,15 +18,16 @@ type Location struct {
 	City string `json:"city"`
 }
 
-func GetLocation(cep string) (Location, error) {
+func GetLocation(ctx context.Context, cep string) (Location, error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	req, err := http.NewRequest("GET", "http://cep.awesomeapi.com.br/json/"+cep, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", "http://cep.awesomeapi.com.br/json/"+cep, nil)
 	if err != nil {
 		return Location{}, err
 	}
 
+	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return Location{}, err

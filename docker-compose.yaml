@@ -1,12 +1,59 @@
 version: '3.8'
 
 services:
-  weather:
+  jeager:
+    image: jaegertracing/all-in-one:latest
+    container_name: jeager
+    restart: always
+    ports:
+      - 16686:16686
+      - 6831:6831/udp
+  
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    ports:
+      - 9090:9090
+    volumes:
+      - ./.docker/prometheus.yaml:/etc/prometheus/prometheus.yaml
+
+  otel-collector:
+    image: otel/opentelemetry-collector
+    container_name: otel-collector
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "8888:8888"
+      - "8889:8889"
+      - "4317:4317"
+    volumes:
+      - ./.docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+
+  go-gateway:
+    build: 
+      context: gateway
+      dockerfile: Dockerfile.prod
+    container_name: go-gateway
+    ports:
+      - 8080:8080
+    environment:
+      - APP_ENV=production
+    depends_on:
+      - jeager
+      - prometheus
+      - otel-collector
+
+  go-weather:
     build: 
       context: weather
       dockerfile: Dockerfile.prod
     container_name: go-weather
     ports:
-      - 8080:8080
+      - 8081:8081
     environment:
       - APP_ENV=production
+    depends_on:
+      - jeager
+      - prometheus
+      - otel-collector
