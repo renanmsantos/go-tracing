@@ -4,19 +4,19 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/renanmoreirasan/go-weather/infra/configs"
 	"github.com/renanmoreirasan/go-weather/internal/usecases"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
 )
 
-func GetTemperature(tracer trace.Tracer) func(w http.ResponseWriter, r *http.Request) {
+func TemperatureHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		carrier := propagation.HeaderCarrier(r.Header)
 		ctx := r.Context()
 		ctx = otel.GetTextMapPropagator().Extract(ctx, carrier)
 
-		ctx, span := tracer.Start(ctx, "START go-weather")
+		ctx, span := configs.GetTracer().Start(ctx, "START call to go-weather")
 		defer span.End()
 
 		w.Header().Set("Content-Type", "application/json")

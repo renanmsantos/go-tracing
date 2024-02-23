@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/renanmoreirasan/go-weather/infra/configs"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 )
@@ -32,6 +33,10 @@ func GetLocationTemperature(ctx context.Context, location Location) (Temperature
 	if err != nil {
 		return Temperatures{}, err
 	}
+
+	ctx, span := configs.GetTracer().Start(ctx, "START call to WEATHER API")
+	defer span.End()
+
 	url := fmt.Sprintf("http://api.weatherapi.com/v1/current.json?key=%s&q=%v,%v", apiKey, latitude, longitude)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {

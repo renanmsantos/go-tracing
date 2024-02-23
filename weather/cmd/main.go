@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/renanmoreirasan/go-weather/infra/configs"
 	"github.com/renanmoreirasan/go-weather/infra/webserver"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -24,7 +26,7 @@ func initProvider(collectorURL string) (func(context.Context) error, error) {
 			semconv.ServiceNameKey.String("weather"),
 		))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
@@ -35,12 +37,12 @@ func initProvider(collectorURL string) (func(context.Context) error, error) {
 		grpc.WithBlock(),
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
 	}
 
 	traceExplorer, err := otlptracegrpc.New(ctx, otlptracegrpc.WithGRPCConn(conn))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create the collector exporter: %w", err)
 	}
 
 	bsp := sdktrace.NewBatchSpanProcessor(traceExplorer)
@@ -60,6 +62,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	tracer := otel.Tracer("microservice-tracer")
-	webserver.StartWebserver(tracer)
+	configs.NewTracer(otel.Tracer("tracer"))
+	webserver.StartWebserver()
 }

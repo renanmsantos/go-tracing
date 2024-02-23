@@ -4,19 +4,19 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/renanmsantos/go-gateway/infra/configs"
 	"github.com/renanmsantos/go-gateway/internal/usecases"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
 )
 
-func ValidationHandler(tracer trace.Tracer) func(w http.ResponseWriter, r *http.Request) {
+func ValidationHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		carrier := propagation.HeaderCarrier(r.Header)
 		ctx := r.Context()
 		ctx = otel.GetTextMapPropagator().Extract(ctx, carrier)
 
-		ctx, span := tracer.Start(ctx, "START go-gateway")
+		ctx, span := configs.GetTracer().Start(ctx, "START go-gateway")
 		defer span.End()
 
 		w.Header().Set("Content-Type", "application/json")

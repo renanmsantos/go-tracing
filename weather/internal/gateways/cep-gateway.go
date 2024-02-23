@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/renanmoreirasan/go-weather/infra/configs"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 )
@@ -21,6 +22,9 @@ type Location struct {
 func GetLocation(ctx context.Context, cep string) (Location, error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	ctx, span := configs.GetTracer().Start(ctx, "START call to CEP API")
+	defer span.End()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", "http://cep.awesomeapi.com.br/json/"+cep, nil)
 	if err != nil {
