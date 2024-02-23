@@ -1,3 +1,22 @@
+# Como rodar o projeto?
+
+## Subir via docker-compose
+``
+docker-compose up -d --build
+``
+
+## Executar uma request para gerar métricas
+``
+curl -XPOST -H "Content-type: application/json" -d '{"cep":"12322640"}' 'http://localhost:8080'
+``
+
+## Acessar o Jeager para verificar as métricas
+
+``
+http://localhost:16686
+``
+
+
 # Sobre o Lab: Tracing distribuído e span 
 
 ## Objetivo
