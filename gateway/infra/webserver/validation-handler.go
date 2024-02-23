@@ -15,19 +15,16 @@ func ValidationHandler() func(w http.ResponseWriter, r *http.Request) {
 			var input usecases.Input
 			err := json.NewDecoder(r.Body).Decode(&input)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				json.NewEncoder(w).Encode(err.Error())
+				http.Error(w, "Invalid zipcode", http.StatusUnprocessableEntity)
 				return
 			}
 			output, err := usecases.Execute(input)
 			if err != nil && err.Error() == "INVALID_CEP" {
-				http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-				json.NewEncoder(w).Encode("Invalid zipcode")
+				http.Error(w, "Invalid zipcode", http.StatusUnprocessableEntity)
 				return
 			}
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
-				json.NewEncoder(w).Encode(err.Error())
 				return
 			}
 			err = json.NewEncoder(w).Encode(output)
