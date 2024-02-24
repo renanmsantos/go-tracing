@@ -1,14 +1,26 @@
 version: '3.8'
 
 services:
-  jeager:
-    image: jaegertracing/all-in-one:latest
-    container_name: jeager
-    restart: always
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    environment:
+      - STORAGE_TYPE=mem
     ports:
-      - 16686:16686
-      - 6831:6831/udp
-  
+      - 9411:9411
+    depends_on:
+      - prometheus
+
+  zipkin-ui:
+    image: openzipkin/zipkin-ui
+    container_name: zipkin-ui
+    environment:
+      - ZIPKIN_BASE_URL=http://zipkin:9411
+    ports:
+      - 80:80
+    depends_on:
+      - zipkin
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -40,7 +52,7 @@ services:
     environment:
       - APP_ENV=production
     depends_on:
-      - jeager
+      - zipkin
       - prometheus
       - otel-collector
 
@@ -54,6 +66,6 @@ services:
     environment:
       - APP_ENV=production
     depends_on:
-      - jeager
+      - zipkin
       - prometheus
       - otel-collector

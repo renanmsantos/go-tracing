@@ -10,10 +10,10 @@ docker-compose up -d --build
 curl -XPOST -H "Content-type: application/json" -d '{"cep":"12322640"}' 'http://localhost:8080'
 ``
 
-## Acessar o Jeager para verificar as métricas
+## Acessar o Zipkin para verificar as métricas
 
 ``
-http://localhost:16686
+http://localhost
 ``
 
 

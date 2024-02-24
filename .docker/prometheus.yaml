@@ -4,3 +4,11 @@ scrape_configs:
     static_configs:
       - targets: ['otel-collector:8888']
       - targets: ['otel-collector:8889']
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']
+  - job_name: 'zipkin'
+    scrape_interval: 5s
+    metrics_path: '/prometheus'
+    static_configs:
+      - targets: ['zipkin:9411']
