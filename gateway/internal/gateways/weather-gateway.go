@@ -3,6 +3,7 @@ package gateways
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,8 +29,12 @@ func GetLocationAndTemperature(ctx context.Context, cep string) (Response, error
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
 	res, err := http.DefaultClient.Do(req)
+	fmt.Println("Depois DO:", res.StatusCode)
 	if err != nil {
 		return Response{}, err
+	}
+	if res.StatusCode == 404 {
+		return Response{}, errors.New("CEP_NOT_FOUND")
 	}
 	defer res.Body.Close()
 

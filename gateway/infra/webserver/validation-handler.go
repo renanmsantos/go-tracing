@@ -2,6 +2,7 @@ package webserver
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/renanmsantos/go-gateway/infra/configs"
@@ -29,8 +30,13 @@ func ValidationHandler() func(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			output, err := usecases.Execute(ctx, input)
+			fmt.Println(output, err)
 			if err != nil && err.Error() == "INVALID_CEP" {
 				http.Error(w, "Invalid zipcode", http.StatusUnprocessableEntity)
+				return
+			}
+			if err != nil && err.Error() == "CEP_NOT_FOUND" {
+				http.Error(w, "Can not found zipcode", http.StatusNotFound)
 				return
 			}
 			if err != nil {

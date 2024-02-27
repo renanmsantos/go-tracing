@@ -25,17 +25,9 @@ func GetLocation(ctx context.Context, cep string) (Location, error) {
 
 	ctx, span := configs.GetTracer().Start(ctx, "START call to CEP API")
 	defer span.End()
-
-	req, err := http.NewRequestWithContext(ctx, "GET", "http://cep.awesomeapi.com.br/json/"+cep, nil)
-	if err != nil {
-		return Location{}, err
-	}
-
+	req, _ := http.NewRequestWithContext(ctx, "GET", "http://cep.awesomeapi.com.br/json/"+cep, nil)
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return Location{}, err
-	}
+	res, _ := http.DefaultClient.Do(req)
 	if res.StatusCode == http.StatusNotFound {
 		return Location{}, errors.New("CEP_NOT_FOUND")
 	}
